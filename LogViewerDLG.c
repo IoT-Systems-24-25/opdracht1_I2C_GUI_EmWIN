@@ -29,9 +29,13 @@
 *
 **********************************************************************
 */
-#define ID_FRAMEWIN_0            (GUI_ID_USER + 0x00)
-#define ID_MULTIEDIT_0           (GUI_ID_USER + 0x01)
-#define ID_BUTTON_0           (GUI_ID_USER + 0x02)
+#define ID_FRAMEWIN_0     (GUI_ID_USER + 0x00)
+#define ID_MULTIEDIT_0     (GUI_ID_USER + 0x01)
+#define ID_BUTTON_0     (GUI_ID_USER + 0x02)
+#define ID_TEXT_0     (GUI_ID_USER + 0x03)
+#define ID_BUTTON_1     (GUI_ID_USER + 0x04)
+#define ID_BUTTON_2     (GUI_ID_USER + 0x05)
+#define ID_BUTTON_3     (GUI_ID_USER + 0x06)
 
 
 // USER START (Optionally insert additional defines)
@@ -52,9 +56,13 @@
 *       _aDialogCreate
 */
 static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
-  { FRAMEWIN_CreateIndirect, "LogViewer", ID_FRAMEWIN_0, 0, 0, 240, 320, 0, 0x0, 0 },
-  { MULTIEDIT_CreateIndirect, "Multiedit", ID_MULTIEDIT_0, 12, 13, 198, 208, 0, 0x0, 0 },
-  { BUTTON_CreateIndirect, "Update", ID_BUTTON_0, 28, 242, 175, 39, 0, 0x0, 0 },
+  { FRAMEWIN_CreateIndirect, "LogViewer", ID_FRAMEWIN_0, 1, -1, 240, 320, 0, 0x0, 0 },
+  { MULTIEDIT_CreateIndirect, "Multiedit", ID_MULTIEDIT_0, 12, 13, 198, 50, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "Update", ID_BUTTON_0, 24, 68, 175, 39, 0, 0x0, 0 },
+  { TEXT_CreateIndirect, "Text", ID_TEXT_0, 75, 122, 80, 20, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "Start", ID_BUTTON_1, 45, 142, 149, 49, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "Pauze", ID_BUTTON_2, 44, 195, 146, 48, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "Stop", ID_BUTTON_3, 42, 249, 150, 47, 0, 0x0, 0 },
   // USER START (Optionally insert additional widgets)
   // USER END
 };
@@ -68,6 +76,9 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
 
 // USER START (Optionally insert additional static code)
 extern char fbuf[200];
+int start=0;
+int stop=0;
+int pauze=0;
 // USER END
 
 /*********************************************************************
@@ -120,6 +131,51 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_MULTIEDIT_0); 
 				MULTIEDIT_SetTextColor (hItem, 1, GUI_BLACK);
 				MULTIEDIT_SetText(hItem, fbuf);
+        // USER END
+        break;
+      case WM_NOTIFICATION_RELEASED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      // USER START (Optionally insert additional code for further notification handling)
+      // USER END
+      }
+      break;
+    case ID_BUTTON_1: // Notifications sent by 'Start'
+      switch(NCode) {
+      case WM_NOTIFICATION_CLICKED:
+        // USER START (Optionally insert code for reacting on notification message)
+			  start=1; 
+        // USER END
+        break;
+      case WM_NOTIFICATION_RELEASED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      // USER START (Optionally insert additional code for further notification handling)
+      // USER END
+      }
+      break;
+    case ID_BUTTON_2: // Notifications sent by 'Pauze'
+      switch(NCode) {
+      case WM_NOTIFICATION_CLICKED:
+        // USER START (Optionally insert code for reacting on notification message)
+			  pauze=1;
+        // USER END
+        break;
+      case WM_NOTIFICATION_RELEASED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      // USER START (Optionally insert additional code for further notification handling)
+      // USER END
+      }
+      break;
+    case ID_BUTTON_3: // Notifications sent by 'Stop'
+      switch(NCode) {
+      case WM_NOTIFICATION_CLICKED:
+        // USER START (Optionally insert code for reacting on notification message)
+			stop=1;
         // USER END
         break;
       case WM_NOTIFICATION_RELEASED:
