@@ -33,6 +33,17 @@
 #define RTE_Drivers_SPI4                /* Driver SPI4 */
 #define RTE_Drivers_SPI5                /* Driver SPI5 */
 #define RTE_Drivers_SPI6                /* Driver SPI6 */
+/* Keil::CMSIS Driver:USART@2.16 */
+#define RTE_Drivers_USART1              /* Driver USART1 */
+#define RTE_Drivers_USART2              /* Driver USART2 */
+#define RTE_Drivers_USART3              /* Driver USART3 */
+#define RTE_Drivers_USART4              /* Driver USART4 */
+#define RTE_Drivers_USART5              /* Driver USART5 */
+#define RTE_Drivers_USART6              /* Driver USART6 */
+#define RTE_Drivers_USART7              /* Driver USART7 */
+#define RTE_Drivers_USART8              /* Driver USART8 */
+#define RTE_Drivers_USART9              /* Driver USART9 */
+#define RTE_Drivers_USART10             /* Driver USART10 */
 /* Keil::CMSIS Driver:USB Host:High-speed@2.25 */
 #define RTE_Drivers_USBH1               /* Driver USBH1 */
 /* Keil::CMSIS-Compiler:File Interface:MDK-MW File System@1.0.0 */
@@ -68,6 +79,8 @@
 #define RTE_DEVICE_HAL_TIM
 /* Keil::Device:STM32Cube HAL:UART@1.8.1 */
 #define RTE_DEVICE_HAL_UART
+/* Keil::Device:STM32Cube HAL:USART@1.8.1 */
+#define RTE_DEVICE_HAL_USART
 /* Keil::Device:Startup@2.6.3 */
 #define RTE_DEVICE_STARTUP_STM32F4XX    /* Device Startup for STM32F4 */
 /* Keil::File System&MDK-Pro:CORE&LFN@6.16.6 */
@@ -85,9 +98,9 @@
 /* Keil::USB&MDK-Pro:Host@6.17.0 */
 #define RTE_USB_Host_0                  /* USB Host 0 */
 
-/* Segger::Graphics&MDK-Pro:CORE@6.32.3 */
+/* Segger::Graphics&MDK-Pro:CORE@6.24.0 */
 #define RTE_Graphics_Core               /* Graphics Core */
-/* Segger::Graphics&MDK-Pro:Input Device:Touchscreen@6.32.3 */
+/* Segger::Graphics&MDK-Pro:Input Device:Touchscreen@6.24.0 */
 #define RTE_Graphics_Touchscreen        /* Graphics Input Device Touchscreen */
 
 
