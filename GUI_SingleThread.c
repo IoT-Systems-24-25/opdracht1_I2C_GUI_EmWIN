@@ -4,9 +4,16 @@
 #include "DIALOG.h"
 #include <string.h>
 #include <stdio.h>
+#include "stm32f4xx_hal.h"  // Voor HAL-definities
 
+
+
+/* Externe variabelen en functies */
 extern osTimerId_t tim_id2;  
 extern int timer_cnt;
+extern I2C_HandleTypeDef hi2c3;
+extern UART_HandleTypeDef huart1;
+
 
 #define ID_FRAMEWIN_0     (GUI_ID_USER + 0x00)
 #define ID_MULTIEDIT_0     (GUI_ID_USER + 0x01)
@@ -21,6 +28,31 @@ extern WM_HWIN CreateLogViewer(void);
 extern int start;
 extern int stop;
 extern int pauze;
+
+
+
+
+/* --------------------------------------------------------------------- */
+/* Sensorfuncties: TC74 uitlezen en temperatuur verzenden via USART      */
+/* --------------------------------------------------------------------- */
+#define TC74_ADDRESS (0x48 << 1)  // TC74 I2C-adres (7-bits adres, dus shift voor HAL)
+
+uint8_t TC74_ReadTemperature(void) {
+  uint8_t temp;
+  if(HAL_I2C_Master_Receive(&hi2c3, TC74_ADDRESS, &temp,1, 100) != HAL_OK) {
+    // Foutafhandeling: sensor uitlezen is mislukt, geef een foutcode terug
+		HAL_UART_Transmit(&huart1, (uint8_t*)"read temp fout ", strlen("read temp fout "), HAL_MAX_DELAY);
+    temp = 0xFF;
+  }
+  return temp;
+}
+
+void USART_SendTemperature(uint8_t temperature) {
+  char msg[50];
+  int len = sprintf(msg, "Temperature: %d C\r\n", temperature);
+  HAL_UART_Transmit(&huart1, (uint8_t*)msg, len, 1000);
+}
+
 
 /*----------------------------------------------------------------------------
  *      GUIThread: GUI Thread for Single-Task Execution Model
@@ -53,6 +85,8 @@ __NO_RETURN static void GUIThread (void *argument) {
 	int pauze_toestand;
 	osStatus_t status; 
 	int timer_cnt_prev=0;
+	uint8_t temperature;
+  char buf[50];
 
   GUI_Init();           /* Initialize the Graphics Component */
 
@@ -81,6 +115,12 @@ __NO_RETURN static void GUIThread (void *argument) {
         //return -1;
 			}    			
 			start=0;
+			HAL_UART_Transmit(&huart1, (uint8_t*)"pasage 1", strlen("pasage 1"), HAL_MAX_DELAY);
+
+			/* >>> Toegevoegd: Lees direct de temperatuur en verstuur deze via USART <<< */
+      temperature = TC74_ReadTemperature();
+			HAL_UART_Transmit(&huart1, (uint8_t*)"pasage 2", strlen("pasage 2"), HAL_MAX_DELAY);
+      USART_SendTemperature(temperature);
 		}
 		if(stop==1)
 		{
@@ -103,11 +143,21 @@ __NO_RETURN static void GUIThread (void *argument) {
 		}
 		if(timer_cnt!=timer_cnt_prev)
 		{
-		  char buf[10];
+		   /* Update de GUI met de nieuwe timerwaarde */
 			sprintf(buf, "%d", timer_cnt);
 			TEXT_SetText(hItem,buf);
 			timer_cnt_prev=timer_cnt;
 		}
+		
+		/* Als de timer draait (timer_cnt_prev != 0 betekent dat hij minstens 1x geteld heeft),
+    lees de temperatuur en verstuur deze naar USART. Dit gebeurt dus elke keer
+    als de teller is veranderd (1x per seconde). */
+    if(timer_cnt_prev)
+    {
+      temperature = TC74_ReadTemperature();
+      sprintf(buf, "Time: %d sec, Temp: %d C", timer_cnt, temperature);
+      USART_SendTemperature(temperature);
+    }
 		
 
 		GUI_TOUCH_Exec();

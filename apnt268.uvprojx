@@ -785,20 +785,20 @@
           <targetInfo name="Target 1"/>
         </targetInfos>
       </component>
-      <component Cbundle="MDK-Pro" Cclass="Graphics" Cgroup="CORE" Cvendor="Segger" Cversion="6.24.0" condition="CMSIS Core with RTOS and Display">
-        <package name="MDK-Middleware_Graphics" schemaVersion="1.7.7" url="https://www.keil.com/pack/" vendor="Keil" version="1.1.0"/>
+      <component Cbundle="MDK-Pro" Cclass="Graphics" Cgroup="CORE" Cvendor="Segger" Cversion="6.32.3" condition="CMSIS Core with RTOS and Display">
+        <package name="MDK-Middleware_Graphics" schemaVersion="1.7.28" url="https://www.keil.com/pack/" vendor="Keil" version="1.3.1"/>
         <targetInfos>
           <targetInfo name="Target 1"/>
         </targetInfos>
       </component>
-      <component Cbundle="MDK-Pro" Cclass="Graphics" Cgroup="Input Device" Csub="Touchscreen" Cvendor="Segger" Cversion="6.24.0" condition="Graphics Core and Touchscreen">
-        <package name="MDK-Middleware_Graphics" schemaVersion="1.7.7" url="https://www.keil.com/pack/" vendor="Keil" version="1.1.0"/>
+      <component Cbundle="MDK-Pro" Cclass="Graphics" Cgroup="Input Device" Csub="Touchscreen" Cvendor="Segger" Cversion="6.32.3" condition="Graphics Core and Touchscreen">
+        <package name="MDK-Middleware_Graphics" schemaVersion="1.7.28" url="https://www.keil.com/pack/" vendor="Keil" version="1.3.1"/>
         <targetInfos>
           <targetInfo name="Target 1"/>
         </targetInfos>
       </component>
-      <component Cbundle="MDK-Pro" Cclass="Graphics" Cgroup="Tools" Csub="GUI Builder" Cvendor="Segger" Cversion="6.24.0" condition="Graphics Core">
-        <package name="MDK-Middleware_Graphics" schemaVersion="1.7.7" url="https://www.keil.com/pack/" vendor="Keil" version="1.1.0"/>
+      <component Cbundle="MDK-Pro" Cclass="Graphics" Cgroup="Tools" Csub="GUI Builder" Cvendor="Segger" Cversion="6.32.3" condition="Graphics Core">
+        <package name="MDK-Middleware_Graphics" schemaVersion="1.7.28" url="https://www.keil.com/pack/" vendor="Keil" version="1.3.1"/>
         <targetInfos>
           <targetInfo name="Target 1"/>
         </targetInfos>
@@ -863,16 +863,16 @@
       </file>
       <file attr="config" category="doc" name="emWin\Tool\GUIBuilder.txt" version="1.0.0">
         <instance index="0">RTE\Graphics\GUIBuilder.txt</instance>
-        <component Cbundle="MDK-Pro" Cclass="Graphics" Cgroup="Tools" Csub="GUI Builder" Cvendor="Segger" Cversion="6.24.0" condition="Graphics Core"/>
-        <package name="MDK-Middleware_Graphics" schemaVersion="1.7.7" url="https://www.keil.com/pack/" vendor="Keil" version="1.1.0"/>
+        <component Cbundle="MDK-Pro" Cclass="Graphics" Cgroup="Tools" Csub="GUI Builder" Cvendor="Segger" Cversion="6.32.3" condition="Graphics Core"/>
+        <package name="MDK-Middleware_Graphics" schemaVersion="1.7.28" url="https://www.keil.com/pack/" vendor="Keil" version="1.3.1"/>
         <targetInfos>
           <targetInfo name="Target 1"/>
         </targetInfos>
       </file>
       <file attr="config" category="source" name="emWin\Sample\Config\GUIConf.c" version="5.0.0">
         <instance index="0">RTE\Graphics\GUIConf.c</instance>
-        <component Cbundle="MDK-Pro" Cclass="Graphics" Cgroup="CORE" Cvendor="Segger" Cversion="6.24.0" condition="CMSIS Core with RTOS and Display"/>
-        <package name="MDK-Middleware_Graphics" schemaVersion="1.7.7" url="https://www.keil.com/pack/" vendor="Keil" version="1.1.0"/>
+        <component Cbundle="MDK-Pro" Cclass="Graphics" Cgroup="CORE" Cvendor="Segger" Cversion="6.32.3" condition="CMSIS Core with RTOS and Display"/>
+        <package name="MDK-Middleware_Graphics" schemaVersion="1.7.28" url="https://www.keil.com/pack/" vendor="Keil" version="1.3.1"/>
         <targetInfos>
           <targetInfo name="Target 1"/>
         </targetInfos>

@@ -1,11 +1,11 @@
 #include "cmsis_os2.h"                          // CMSIS RTOS header file
 #include "Board_LED.h"                  // Board Support:LED
 #include <string.h>       // Voor strlen()
-#include "stm32f4xx_hal.h"
+
 
  
 // Zorg dat de UART handle bekend is. USART1 wordt in main.c geïnitialiseerd.
-extern UART_HandleTypeDef huart1;
+
 /*----------------------------------------------------------------------------
  *      Timer: Sample timer functions
  *---------------------------------------------------------------------------*/
@@ -33,10 +33,6 @@ static void Timer2_Callback (void const *arg) {
 		LED_Off(0);
 	}
 	
-  // Bericht versturen via USART1
-  char *msg = "Hello from Timer!\r\n";
-              
-  HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 }
  
 // Example: Create and Start timers

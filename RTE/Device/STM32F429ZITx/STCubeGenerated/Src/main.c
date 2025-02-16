@@ -138,7 +138,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	
 	osKernelInitialize();
-	
+
 	Init_Thread();
 	
 	osKernelStart();

@@ -98,9 +98,9 @@
 /* Keil::USB&MDK-Pro:Host@6.17.0 */
 #define RTE_USB_Host_0                  /* USB Host 0 */
 
-/* Segger::Graphics&MDK-Pro:CORE@6.24.0 */
+/* Segger::Graphics&MDK-Pro:CORE@6.32.3 */
 #define RTE_Graphics_Core               /* Graphics Core */
-/* Segger::Graphics&MDK-Pro:Input Device:Touchscreen@6.24.0 */
+/* Segger::Graphics&MDK-Pro:Input Device:Touchscreen@6.32.3 */
 #define RTE_Graphics_Touchscreen        /* Graphics Input Device Touchscreen */
 
 
