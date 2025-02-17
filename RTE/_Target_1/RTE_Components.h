@@ -51,6 +51,8 @@
 #define RTE_CMSIS_Compiler_File_Interface_MDK_MW /* CMSIS-Compiler File Interface: MDK-Middleware File System */
 /* Keil::Device:STM32Cube Framework:STM32CubeMX@1.1.0 */
 #define RTE_DEVICE_FRAMEWORK_CUBE_MX
+/* Keil::Device:STM32Cube HAL:ADC@1.8.1 */
+#define RTE_DEVICE_HAL_ADC
 /* Keil::Device:STM32Cube HAL:Common@1.8.1 */
 #define RTE_DEVICE_HAL_COMMON
 /* Keil::Device:STM32Cube HAL:Cortex@1.8.1 */
