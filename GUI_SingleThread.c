@@ -1,35 +1,34 @@
-#include "TC74A0.h"
-#include "internal_temp.h"
+#include "TC74A0.h" 				 // Externe sensor (TC74) via CMSIS I2C
+#include "internal_temp.h"   // Interne ADC-sensor module
 #include "stm32f4xx_hal.h"  // Voor HAL-definities
 #include "GUI.h"
 #include "DIALOG.h"
+#include "PROGBAR.h"
 #include "cmsis_os2.h"
 #include <string.h>
 #include <stdio.h>
 
 
+#define ID_FRAMEWIN_0            (GUI_ID_USER + 0x00)
+#define ID_BUTTON_0            (GUI_ID_USER + 0x07)  // toon temperatuur button
+#define ID_PROGBAR_0     (GUI_ID_USER + 0x02) // progresbar interne temp
+#define ID_PROGBAR_1     (GUI_ID_USER + 0x03) // progresbar externe temp
+#define ID_BUTTON_1            (GUI_ID_USER + 0x0A) // save naar usb button
+#define ID_TEXT_0            (GUI_ID_USER + 0x0B)  // interne temp textveld
+#define ID_TEXT_1            (GUI_ID_USER + 0x0C)  // externe temp textveld 
+#define ID_MULTIEDIT_0     (GUI_ID_USER + 0x07)  // toon intern temp
+#define ID_MULTIEDIT_1     (GUI_ID_USER + 0x08)  // toon externe temp 
 
 
 /* Externe variabelen en functies */
 extern osTimerId_t tim_id2;  
 extern int timer_cnt;
 extern UART_HandleTypeDef huart1;
-
-
-
-#define ID_FRAMEWIN_0     (GUI_ID_USER + 0x00)
-#define ID_MULTIEDIT_0     (GUI_ID_USER + 0x01)
-#define ID_BUTTON_0     (GUI_ID_USER + 0x02)
-#define ID_TEXT_0     (GUI_ID_USER + 0x03)
-#define ID_BUTTON_1     (GUI_ID_USER + 0x04)
-#define ID_BUTTON_2     (GUI_ID_USER + 0x05)
-#define ID_BUTTON_3     (GUI_ID_USER + 0x06)
-
+extern int ToonTemperatuur;
+extern int SaveNaarUsb;
 extern WM_HWIN CreateLogViewer(void);
 
-extern int start;
-extern int stop;
-extern int pauze;
+
 
 
 
@@ -68,21 +67,26 @@ int Init_GUIThread (void) {
 
 __NO_RETURN static void GUIThread (void *argument) {
   (void)argument;
-	WM_HWIN hWin,hItem;
+	WM_HWIN hWin,ToonInternTemp,ToonExternTemp, hProgInt, hProgExt;
 	int pauze_toestand;
 	osStatus_t status; 
 	int timer_cnt_prev=0;
 	uint8_t temperature;
   float temperatureMCU;
-  char buf[64];
+  char tempextern[64];
+	char tempintern[64];
 
   GUI_Init();           /* Initialize the Graphics Component */
 
   /* Add GUI setup code here */
 	//GUI_DispString("Hello World!");
 	hWin=CreateLogViewer();
-	hItem = WM_GetDialogItem(hWin, ID_TEXT_0);
-  TEXT_SetText(hItem, "Hello Vives: time = 0");
+	
+	ToonInternTemp = WM_GetDialogItem(hWin, ID_MULTIEDIT_0);
+	ToonExternTemp = WM_GetDialogItem(hWin, ID_MULTIEDIT_1);
+	hProgInt = WM_GetDialogItem(hWin, ID_PROGBAR_0);  // Interne temperatuur progressbar
+  hProgExt = WM_GetDialogItem(hWin, ID_PROGBAR_1);  // Externe temperatuur progressbar
+ 
 	
   // Init de CMSIS I2C-driver
   if (TC74_DriverInitialize() == 0) {
@@ -99,7 +103,7 @@ __NO_RETURN static void GUIThread (void *argument) {
   
     /* All GUI related activities might only be called from here */
 		
-		if(start==1)
+		if(ToonTemperatuur==1)
 		{			
 		   
 			//reset teller als niet in pauze toestand
@@ -113,7 +117,7 @@ __NO_RETURN static void GUIThread (void *argument) {
       if (status != osOK) {
         //return -1;
 			}    			
-			start=0;
+			ToonTemperatuur=0;
 			
 			
       // Check device
@@ -130,16 +134,8 @@ __NO_RETURN static void GUIThread (void *argument) {
       }
 
 		}
-		if(stop==1)
-		{
-			//stop timer
-			status=osTimerStop(tim_id2);
-			 if (status != osOK) {
-        //return -1;
-			}   
-		  stop=0;
-		}
-		if(pauze==1)
+		
+		if(SaveNaarUsb==1)
 		{
 			//stop timer
 			status=osTimerStop(tim_id2);
@@ -147,24 +143,29 @@ __NO_RETURN static void GUIThread (void *argument) {
         //return -1;
 			}   
 			pauze_toestand=1;
-			pauze=0;
+			SaveNaarUsb=0;
 		}
+		
 		if(timer_cnt!=timer_cnt_prev)
 		{
 			 // Lees temp  Externe sensor (TC74)
       if (TC74_ReadTemperature(&temperature) == 0) {
-        sprintf(buf, "Time: %d sec, Temp: %d C\r\n", timer_cnt, temperature);
-        PrintUART(buf);
-				TEXT_SetText(hItem,buf);
+        sprintf(tempextern,"Temp: %d C\r\n", temperature);
+        PrintUART(tempextern);
+			MULTIEDIT_SetText(ToonExternTemp,tempextern);
+				        // Stel de externe progressbar in (bijvoorbeeld 0 tot 100)
+        PROGBAR_SetValue(hProgExt, (int)temperature);
       } else {
         PrintUART("TC74 Read FAIL\r\n");
       }
 			
 			// 5) Interne sensor (MCU)
       temperatureMCU = InternalTemp_ReadCelsius();
-      sprintf(buf, "Time: %d sec, MCU Temp: %.2f C\r\n", timer_cnt, temperatureMCU);
-      PrintUART(buf);
-			TEXT_SetText(hItem,buf);
+      sprintf(tempintern, "Temp: %.2f C\r\n", temperatureMCU);
+      PrintUART(tempintern);
+			MULTIEDIT_SetText(ToonInternTemp,tempintern);
+			 // Stel de interne progressbar in (bijvoorbeeld 0 tot 100)
+			PROGBAR_SetValue(hProgInt, (int)temperatureMCU);
 
 			timer_cnt_prev=timer_cnt;
 		}
