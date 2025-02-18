@@ -414,6 +414,26 @@
               <FileType>1</FileType>
               <FilePath>.\LogViewerDLG.c</FilePath>
             </File>
+            <File>
+              <FileName>TC74A0.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\TC74A0.h</FilePath>
+            </File>
+            <File>
+              <FileName>TC74A0.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\TC74A0.c</FilePath>
+            </File>
+            <File>
+              <FileName>internal_temp.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\internal_temp.h</FilePath>
+            </File>
+            <File>
+              <FileName>internal_temp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\internal_temp.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
