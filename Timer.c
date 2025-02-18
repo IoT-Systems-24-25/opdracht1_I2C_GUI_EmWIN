@@ -28,9 +28,9 @@ static uint32_t exec2;                          // argument for the timer call b
 static void Timer2_Callback (void const *arg) {
   // add user code here
 	timer_cnt++;
-	if (timer_cnt & 1) LED_On (0);
+	if (timer_cnt & 1);
 	else {
-		LED_Off(0);
+		
 	}
 	
 }

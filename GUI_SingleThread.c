@@ -7,17 +7,21 @@
 #include "cmsis_os2.h"
 #include <string.h>
 #include <stdio.h>
+#include "Board_LED.h"
 
 
-#define ID_FRAMEWIN_0            (GUI_ID_USER + 0x00)
-#define ID_BUTTON_0            (GUI_ID_USER + 0x07)  // toon temperatuur button
+#define ID_FRAMEWIN_0     (GUI_ID_USER + 0x00)
+#define ID_BUTTON_0     (GUI_ID_USER + 0x01)  // toon temperatuur button
 #define ID_PROGBAR_0     (GUI_ID_USER + 0x02) // progresbar interne temp
 #define ID_PROGBAR_1     (GUI_ID_USER + 0x03) // progresbar externe temp
-#define ID_BUTTON_1            (GUI_ID_USER + 0x0A) // save naar usb button
-#define ID_TEXT_0            (GUI_ID_USER + 0x0B)  // interne temp textveld
-#define ID_TEXT_1            (GUI_ID_USER + 0x0C)  // externe temp textveld 
-#define ID_MULTIEDIT_0     (GUI_ID_USER + 0x07)  // toon intern temp
-#define ID_MULTIEDIT_1     (GUI_ID_USER + 0x08)  // toon externe temp 
+#define ID_BUTTON_1     (GUI_ID_USER + 0x04)  // save naar usb button
+#define ID_TEXT_0     (GUI_ID_USER + 0x05)    // interne temp textveld
+#define ID_TEXT_1     (GUI_ID_USER + 0x06)    // externe temp textveld 
+#define ID_MULTIEDIT_0     (GUI_ID_USER + 0x07) // toon intern temp
+#define ID_MULTIEDIT_1     (GUI_ID_USER + 0x08) // toon externe temp 
+#define ID_BUTTON_2     (GUI_ID_USER + 0x09)
+#define ID_BUTTON_3     (GUI_ID_USER + 0x0A)
+#define ID_EDIT_0     (GUI_ID_USER + 0x0B)
 
 
 /* Externe variabelen en functies */
@@ -26,6 +30,8 @@ extern int timer_cnt;
 extern UART_HandleTypeDef huart1;
 extern int ToonTemperatuur;
 extern int SaveNaarUsb;
+int extern Auto;
+int extern Manueel;
 extern WM_HWIN CreateLogViewer(void);
 
 
@@ -67,7 +73,7 @@ int Init_GUIThread (void) {
 
 __NO_RETURN static void GUIThread (void *argument) {
   (void)argument;
-	WM_HWIN hWin,ToonInternTemp,ToonExternTemp, hProgInt, hProgExt;
+	WM_HWIN hWin,ToonInternTemp,ToonExternTemp, hProgInt, hProgExt, Ventilator;
 	int pauze_toestand;
 	osStatus_t status; 
 	int timer_cnt_prev=0;
@@ -84,8 +90,13 @@ __NO_RETURN static void GUIThread (void *argument) {
 	
 	ToonInternTemp = WM_GetDialogItem(hWin, ID_MULTIEDIT_0);
 	ToonExternTemp = WM_GetDialogItem(hWin, ID_MULTIEDIT_1);
+	Ventilator= WM_GetDialogItem(hWin, ID_EDIT_0 );
 	hProgInt = WM_GetDialogItem(hWin, ID_PROGBAR_0);  // Interne temperatuur progressbar
   hProgExt = WM_GetDialogItem(hWin, ID_PROGBAR_1);  // Externe temperatuur progressbar
+	
+ 
+  
+
  
 	
   // Init de CMSIS I2C-driver
@@ -145,6 +156,45 @@ __NO_RETURN static void GUIThread (void *argument) {
 			pauze_toestand=1;
 			SaveNaarUsb=0;
 		}
+		
+				
+// Eerst controleren of de manueel-modus actief is:
+if (Manueel == 1) {
+    // Zorg dat de auto-modus wordt uitgeschakeld:
+    Auto = 0;
+    
+    // Gebruik een statische variabele om de huidige LED-status bij te houden
+    static int ledState = 0;  // 0 = LED uit, 1 = LED aan
+    // Toggle de LED-status:
+    ledState = !ledState;
+    if (ledState) {
+        LED_On(0);
+        PrintUART("LED LD3 manueel aan \r\n");
+			  EDIT_SetText(Ventilator,"LD3 aan");
+    } else {
+        LED_Off(0);
+        PrintUART("LED LD3 manueel uit\r\n");
+			EDIT_SetText(Ventilator,"LD3 uit");
+    }
+    // Reset de manueel-flag zodat de toggle maar één keer per druk gebeurt
+    Manueel = 0;
+}
+// Als manueel niet actief is, en de auto-modus wel:
+else if (Auto == 1) {
+    // Bij auto wordt de LED aangestuurd op basis van de temperatuur:
+    if (temperature > 25) {
+        LED_On(0);
+			PrintUART("LED LD3 aan \r\n");
+			EDIT_SetText(Ventilator,"LD3 aan");
+    } else {
+        LED_Off(0);
+			PrintUART("LED LD3 uit \r\n");
+			EDIT_SetText(Ventilator,"LD3 uit");
+    }
+}
+
+		
+		
 		
 		if(timer_cnt!=timer_cnt_prev)
 		{

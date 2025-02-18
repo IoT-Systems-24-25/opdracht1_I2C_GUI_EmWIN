@@ -38,6 +38,9 @@
 #define ID_TEXT_1     (GUI_ID_USER + 0x06)
 #define ID_MULTIEDIT_0     (GUI_ID_USER + 0x07)
 #define ID_MULTIEDIT_1     (GUI_ID_USER + 0x08)
+#define ID_BUTTON_2     (GUI_ID_USER + 0x09)
+#define ID_BUTTON_3     (GUI_ID_USER + 0x0A)
+#define ID_EDIT_0     (GUI_ID_USER + 0x0B)
 
 
 // USER START (Optionally insert additional defines)
@@ -58,15 +61,18 @@
 *       _aDialogCreate
 */
 static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
-  { FRAMEWIN_CreateIndirect, "LogViewer", ID_FRAMEWIN_0, -4, -2, 240, 320, 0, 0x0, 0 },
-  { BUTTON_CreateIndirect, "toon temperatuur", ID_BUTTON_0, 57, 216, 123, 28, 0, 0x0, 0 },
+  { FRAMEWIN_CreateIndirect, "LogViewer", ID_FRAMEWIN_0, -3, -2, 240, 320, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "toon temperatuur", ID_BUTTON_0, 63, 214, 94, 27, 0, 0x0, 0 },
   { PROGBAR_CreateIndirect, "Progbar", ID_PROGBAR_0, 31, 68, 39, 130, 1, 0x0, 0 },
   { PROGBAR_CreateIndirect, "Progbar", ID_PROGBAR_1, 158, 67, 39, 133, 1, 0x0, 0 },
-  { BUTTON_CreateIndirect, "save naar usb", ID_BUTTON_1, 81, 253, 80, 20, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "save naar usb", ID_BUTTON_1, 68, 251, 88, 32, 0, 0x0, 0 },
   { TEXT_CreateIndirect, "interne temp", ID_TEXT_0, 20, 23, 80, 23, 0, 0x0, 0 },
   { TEXT_CreateIndirect, "externe temp", ID_TEXT_1, 140, 26, 80, 20, 0, 0x0, 0 },
   { MULTIEDIT_CreateIndirect, "InterneTemp", ID_MULTIEDIT_0, 20, 40, 95, 25, 0, 0x0, 0 },
   { MULTIEDIT_CreateIndirect, "ExterneTemp", ID_MULTIEDIT_1, 148, 42, 67, 22, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "AUTO", ID_BUTTON_2, 10, 217, 40, 48, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "MANUAL", ID_BUTTON_3, 169, 220, 53, 43, 0, 0x0, 0 },
+  { EDIT_CreateIndirect, "Edit", ID_EDIT_0, 77, 88, 76, 28, 0, 0x64, 0 },
   // USER START (Optionally insert additional widgets)
   // USER END
 };
@@ -82,6 +88,8 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
 extern char fbuf[200];
 int ToonTemperatuur=0;
 int SaveNaarUsb=0;
+int Auto=0;
+int Manueel=0;
 // USER END
 
 /*********************************************************************
@@ -98,6 +106,11 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
   switch (pMsg->MsgId) {
   case WM_INIT_DIALOG:
     //
+    // Initialization of 'Progbar'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_PROGBAR_0);
+    PROGBAR_SetFont(hItem, GUI_FONT_6X8);
+    //
     // Initialization of 'InterneTemp'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_MULTIEDIT_0);
@@ -107,6 +120,11 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_MULTIEDIT_1);
     MULTIEDIT_SetText(hItem, "toon extern");
+    //
+    // Initialization of 'Edit'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_EDIT_0);
+    EDIT_SetText(hItem, "VERTILATOR ");
     // USER START (Optionally insert additional code for further widget initialization)
     // USER END
     break;
@@ -163,6 +181,54 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
       }
       break;
     case ID_MULTIEDIT_1: // Notifications sent by 'ExterneTemp'
+      switch(NCode) {
+      case WM_NOTIFICATION_CLICKED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      case WM_NOTIFICATION_RELEASED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      case WM_NOTIFICATION_VALUE_CHANGED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      // USER START (Optionally insert additional code for further notification handling)
+      // USER END
+      }
+      break;
+    case ID_BUTTON_2: // Notifications sent by 'AUTO'
+      switch(NCode) {
+      case WM_NOTIFICATION_CLICKED:
+        // USER START (Optionally insert code for reacting on notification message)
+			   Auto=1;
+        // USER END
+        break;
+      case WM_NOTIFICATION_RELEASED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      // USER START (Optionally insert additional code for further notification handling)
+      // USER END
+      }
+      break;
+    case ID_BUTTON_3: // Notifications sent by 'MANUAL'
+      switch(NCode) {
+      case WM_NOTIFICATION_CLICKED:
+        // USER START (Optionally insert code for reacting on notification message)
+			  Manueel=1;
+        // USER END
+        break;
+      case WM_NOTIFICATION_RELEASED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      // USER START (Optionally insert additional code for further notification handling)
+      // USER END
+      }
+      break;
+    case ID_EDIT_0: // Notifications sent by 'Edit'
       switch(NCode) {
       case WM_NOTIFICATION_CLICKED:
         // USER START (Optionally insert code for reacting on notification message)
