@@ -3,11 +3,15 @@
 #include "stm32f4xx_hal.h"  // Voor HAL-definities
 #include "GUI.h"
 #include "DIALOG.h"
-#include "PROGBAR.h"
+#include "PROGBAR.h"        // Voor progressbar-functies
+#include "SLIDER.h"          // Voor slider-functies
 #include "cmsis_os2.h"
 #include <string.h>
 #include <stdio.h>
-#include "Board_LED.h"
+#include "Board_LED.h"      // Voor LED_On/LED_Off
+#include "USBH_MSC.h"        // USB MSC API
+#include "rl_fs.h"           // File System API (fopen, fprintf, fclose)
+
 
 
 #define ID_FRAMEWIN_0     (GUI_ID_USER + 0x00)
@@ -19,10 +23,11 @@
 #define ID_TEXT_1     (GUI_ID_USER + 0x06)    // externe temp textveld 
 #define ID_MULTIEDIT_0     (GUI_ID_USER + 0x07) // toon intern temp
 #define ID_MULTIEDIT_1     (GUI_ID_USER + 0x08) // toon externe temp 
-#define ID_BUTTON_2     (GUI_ID_USER + 0x09)
-#define ID_BUTTON_3     (GUI_ID_USER + 0x0A)
-#define ID_EDIT_0     (GUI_ID_USER + 0x0B)
-
+#define ID_BUTTON_2     (GUI_ID_USER + 0x09)    // auto button
+#define ID_BUTTON_3     (GUI_ID_USER + 0x0A)    //manual button
+#define ID_EDIT_0     (GUI_ID_USER + 0x0B)      //simulatie ventilator
+#define ID_SLIDER_0     (GUI_ID_USER + 0x0C)    // temp instellen start ventilator
+#define ID_EDIT_1     (GUI_ID_USER + 0x0D)      // waarde waar limit staat 
 
 /* Externe variabelen en functies */
 extern osTimerId_t tim_id2;  
@@ -34,6 +39,7 @@ int extern Auto;
 int extern Manueel;
 extern WM_HWIN CreateLogViewer(void);
 
+static int TempLimit = 25;  // standaard limiet op 25°C
 
 
 
@@ -44,7 +50,63 @@ static void PrintUART(const char *text) {
   HAL_UART_Transmit(&huart1, (uint8_t*)text, strlen(text), HAL_MAX_DELAY);
 }
 
+static void LogTemperatureToUSB(uint8_t tempTC74, float tempMCU, int timerValue) {
+  const char *drive = "U0:";
+  int retry = 3; // Probeer maximaal 3 keer
 
+  while (retry--) {
+    if (USBH_MSC_DriveGetMediaStatus(drive) == USBH_MSC_OK) {
+      int32_t mount_status = USBH_MSC_DriveMount(drive);
+      if (mount_status == USBH_MSC_OK) {
+        FILE *fp = fopen("U0:/temp_log.txt", "a");
+        if (fp != NULL) {
+          fprintf(fp, "Time: %d sec, TC74: %d C, MCU: %.2f C\r\n", timerValue, tempTC74, tempMCU);
+          fclose(fp);
+          PrintUART("Temperatuur gelogd naar USB\r\n");
+          return;  // Succesvol gelogd, exit de functie
+        } else {
+          PrintUART("File open FAIL\r\n");
+        }
+      } else if (mount_status == USBH_MSC_ERROR_FORMAT) {
+        PrintUART("USB drive mounted maar onformatteerd, format nodig\r\n");
+        // Voer formatactie uit (controleer of fformat() beschikbaar is)
+        fformat(drive, "/FAT32");
+      } else {
+        PrintUART("USB drive mount FAIL\r\n");
+      }
+    } else {
+      PrintUART("USB drive not connected\r\n");
+    }
+    // Wacht 500ms en probeer opnieuw
+    osDelay(500);
+  }
+  // Als hier aangekomen, dan is loggen niet gelukt.
+  PrintUART("USB logging FAILED na retries\r\n");
+}
+
+
+static void USBLoggerThread(void *argument) {
+  (void)argument;
+  uint8_t temperature;
+  float temperatureMCU;
+  char tempextern[64];
+  char tempintern[64];
+
+  // Lees sensorwaarden
+  if (TC74_ReadTemperature(&temperature) == 0) {
+    sprintf(tempextern, "Temp: %d C", temperature);
+  } else {
+    strcpy(tempextern, "TC74 Read FAIL");
+  }
+  temperatureMCU = InternalTemp_ReadCelsius();
+  sprintf(tempintern, "Temp: %.2f C", temperatureMCU);
+
+  // Log naar USB
+  LogTemperatureToUSB(temperature, temperatureMCU, timer_cnt);
+
+  // Beëindig deze thread
+  osThreadExit();
+}
 
 /*----------------------------------------------------------------------------
  *      GUIThread: GUI Thread for Single-Task Execution Model
@@ -73,7 +135,7 @@ int Init_GUIThread (void) {
 
 __NO_RETURN static void GUIThread (void *argument) {
   (void)argument;
-	WM_HWIN hWin,ToonInternTemp,ToonExternTemp, hProgInt, hProgExt, Ventilator;
+	WM_HWIN hWin,ToonInternTemp,ToonExternTemp, hProgInt, hProgExt, Ventilator, hSlider, hEditLimit;
 	int pauze_toestand;
 	osStatus_t status; 
 	int timer_cnt_prev=0;
@@ -81,6 +143,7 @@ __NO_RETURN static void GUIThread (void *argument) {
   float temperatureMCU;
   char tempextern[64];
 	char tempintern[64];
+	char limitText[32];
 
   GUI_Init();           /* Initialize the Graphics Component */
 
@@ -90,10 +153,13 @@ __NO_RETURN static void GUIThread (void *argument) {
 	
 	ToonInternTemp = WM_GetDialogItem(hWin, ID_MULTIEDIT_0);
 	ToonExternTemp = WM_GetDialogItem(hWin, ID_MULTIEDIT_1);
-	Ventilator= WM_GetDialogItem(hWin, ID_EDIT_0 );
-	hProgInt = WM_GetDialogItem(hWin, ID_PROGBAR_0);  // Interne temperatuur progressbar
-  hProgExt = WM_GetDialogItem(hWin, ID_PROGBAR_1);  // Externe temperatuur progressbar
-	
+	Ventilator     = WM_GetDialogItem(hWin, ID_EDIT_0 );
+	hProgInt       = WM_GetDialogItem(hWin, ID_PROGBAR_0);  // Interne temperatuur progressbar
+  hProgExt       = WM_GetDialogItem(hWin, ID_PROGBAR_1);  // Externe temperatuur progressbar
+	hSlider        = WM_GetDialogItem(hWin, ID_SLIDER_0);
+  hEditLimit     = WM_GetDialogItem(hWin, ID_EDIT_1);
+	SLIDER_SetRange(hSlider, 0, 100);                       // stel het bereik in (bijv. 0 tot 100)
+  SLIDER_SetValue(hSlider, 25);                           // standaardwaarde op 25 graden
  
   
 
@@ -112,7 +178,10 @@ __NO_RETURN static void GUIThread (void *argument) {
 	
   while (1) {
   
-    /* All GUI related activities might only be called from here */
+    // Lees sliderwaarde en update het limit edit-veld
+    TempLimit = SLIDER_GetValue(hSlider);
+    sprintf(limitText, " start ventilator : %d C", TempLimit);
+    EDIT_SetText(hEditLimit, limitText);
 		
 		if(ToonTemperatuur==1)
 		{			
@@ -148,6 +217,9 @@ __NO_RETURN static void GUIThread (void *argument) {
 		
 		if(SaveNaarUsb==1)
 		{
+			Manueel = 0;
+			Auto = 0;
+		  osThreadNew(USBLoggerThread, NULL, NULL);
 			//stop timer
 			status=osTimerStop(tim_id2);
 			 if (status != osOK) {
@@ -155,6 +227,7 @@ __NO_RETURN static void GUIThread (void *argument) {
 			}   
 			pauze_toestand=1;
 			SaveNaarUsb=0;
+			
 		}
 		
 				
@@ -182,13 +255,11 @@ if (Manueel == 1) {
 // Als manueel niet actief is, en de auto-modus wel:
 else if (Auto == 1) {
     // Bij auto wordt de LED aangestuurd op basis van de temperatuur:
-    if (temperature > 25) {
+    if (temperature > TempLimit) {
         LED_On(0);
-			PrintUART("LED LD3 aan \r\n");
 			EDIT_SetText(Ventilator,"LD3 aan");
     } else {
         LED_Off(0);
-			PrintUART("LED LD3 uit \r\n");
 			EDIT_SetText(Ventilator,"LD3 uit");
     }
 }
