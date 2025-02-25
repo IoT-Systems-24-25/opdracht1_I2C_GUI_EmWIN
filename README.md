@@ -1,4 +1,4 @@
-# 📡 STM32F4 I2C & GUI met emWin
+ STM32F4 I2C & GUI met emWin
 
 Dit project maakt gebruik van een **STM32F429I-DISC1** microcontroller om een **externe temperatuur sensor (TC74A0)** en de **interne temperatuur sensor van de MCU** uit te lezen. De verkregen data wordt weergegeven via een **GUI op een touchscreen (emWin)** en verzonden via **UART**. 
 
@@ -16,7 +16,7 @@ Een **ventilator (gesimuleerd met LED LD3)** schakelt automatisch in bij een ing
 
 ---
 
-## 🛠 **Benodigde hardware**
+**Benodigde hardware**
 - **STM32F429I-DISC1** ontwikkelbord
 - **TC74A0 temperatuur sensor** (I2C)
 - **Micro-USB kabel** voor programmering en debugging
@@ -25,7 +25,7 @@ Een **ventilator (gesimuleerd met LED LD3)** schakelt automatisch in bij een ing
 
 ---
 
-## 🖥 **Gebruikte tools & software**
+**Gebruikte tools & software**
 - **Keil \u00b5Vision** (voor codeontwikkeling)
 - **STM32CubeMX** (voor hardwareconfiguratie)
 - **Git & GitHub** (voor versiebeheer)
@@ -55,7 +55,7 @@ Een **ventilator (gesimuleerd met LED LD3)** schakelt automatisch in bij een ing
 
 ---
 
-## 🎛 **Hoe het werkt**
+**Hoe het werkt**
 1. **Start de STM32** → GUI verschijnt op het **touchscreen**.
 2. **Klik op "Toon Temperatuur"** → Externe en interne temperatuur worden uitgelezen en getoond in de GUI.
 3. **Schuif de slider** → Wijzigt de temperatuurgrens voor het inschakelen van de ventilator.
